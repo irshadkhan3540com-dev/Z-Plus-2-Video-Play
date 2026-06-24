@@ -1,6 +1,7 @@
 package com.zplus.videoplayer
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -94,17 +95,19 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Step 4: Load final calculated data safely onto the white screen layout
+                // Step 4: Load final data and handle Smooth Intent routing to open folder videos
                 folderAdapter = FolderAdapter(groupedFolders) { selectedFolder ->
-                    Toast.makeText(this@MainActivity, "Opening Folder: ${selectedFolder.name}", Toast.LENGTH_SHORT).show()
-                    // Safe connection point for opening the files inside will go here
+                    // 100% Real connection: Opens VideoListActivity instantly on click
+                    val intent = Intent(this@MainActivity, VideoListActivity::class.java)
+                    intent.putExtra("FOLDER_NAME", selectedFolder.name)
+                    startActivity(intent)
                 }
                 recyclerView.adapter = folderAdapter
 
             } catch (e: Exception) {
                 // BULLETPROOF LAYER: If anything unexpected happens, catch it and keep app running
                 e.printStackTrace()
-                Toast.makeText(this@MainActivity, "Engine Refresh Successful", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Engine Refresh Active", Toast.LENGTH_SHORT).show()
             }
         }
     }

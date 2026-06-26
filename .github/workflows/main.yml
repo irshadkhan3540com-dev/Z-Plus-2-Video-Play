@@ -1,4 +1,4 @@
-name: Z Plus VIP Player Build
+name: Z Plus VIP Player Final Build
 
 on:
   push:
@@ -11,31 +11,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. गिटहब आपका कोड उठाएगा
       - name: Checkout Project Code
         uses: actions/checkout@v4
 
-      # 2. जावा 17 सेटअप करेगा
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. 🔥 सबसे बड़ा फिक्स: गिटहब को अपनी मर्जी चलाने से रोकना
-      # हम उसे मजबूर कर रहे हैं कि वो सिर्फ और सिर्फ Gradle 8.2 ही इस्तेमाल करे!
-      - name: Force Exact Gradle Version 8.2
+      # Gradle 8.2 को फिक्स किया ताकि कोई भी वर्ज़न एरर न आए
+      - name: Setup Gradle 8.2
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
-      # 4. बिना किसी स्टार्टर फाइल (gradlew) के, सीधा ओरिजिनल इंजन से APK बनाना
-      - name: Build the VIP APK Directly
-        run: gradle assembleDebug --stacktrace
+      # यह कमांड आपके पूरे प्रोजेक्ट को स्कैन करेगी और APK बनाएगी
+      - name: Build VIP APK
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew :app:assembleDebug
+          else
+            gradle :app:assembleDebug
+          fi
+        continue-on-error: false
 
-      # 5. तैयार APK को आपको डाउनलोड के लिए देना
+      # तैयार APK को डाउनलोड के लिए सेव करना
       - name: Upload APK for Download
         uses: actions/upload-artifact@v4
         with:
           name: Z-Plus-VIP-Player-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: '**/build/outputs/apk/debug/*.apk'

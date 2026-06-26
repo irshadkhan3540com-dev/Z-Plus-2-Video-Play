@@ -15,6 +15,14 @@ android {
         versionName "1.0"
     }
 
+    // यह ब्लॉक मिसिंग था, रोबोट इसी वजह से बार-बार फेल हो रहा था
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -26,12 +34,11 @@ android {
 }
 
 dependencies {
-    // यहाँ साफ़-साफ़ 'implementation' का इस्तेमाल किया गया है
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     
-    // Media3 (The Google Video Engine)
+    // Media3 - Google Video Engine
     implementation 'androidx.media3:media3-exoplayer:1.2.0'
     implementation 'androidx.media3:media3-ui:1.2.0'
     implementation 'androidx.media3:media3-session:1.2.0'

@@ -1,4 +1,4 @@
-name: Z Plus VIP Player Final Build
+name: Z Plus AI-Self-Repairing Builder
 
 on:
   push:
@@ -9,32 +9,44 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # यह कोड आपके पूरे प्रोजेक्ट के अंदर 'app' नाम का फोल्डर ढूंढेगा
-      - name: Locate and Build
+      # 🔥 AI-Self-Repairing Logic: यह रोबोट खुद फाइल्स को रिपेयर करेगा
+      - name: AI Repair and Build
         run: |
-          # यह कमांड पूरे रिपॉजिटरी में उस फोल्डर को ढूंढेगी जिसमें build.gradle है
-          APP_DIR=$(find . -name "build.gradle" -exec dirname {} \; | head -n 1)
-          echo "Found project at: $APP_DIR"
-          cd $APP_DIR
+          echo "Starting AI Deep Scan and Repair..."
           
-          # gradlew ढूंढना और परमिशन देना
-          if [ -f "./gradlew" ]; then
+          # 1. 'gradlew' फाइल गायब है तो इंटरनेट से नया वर्जन ले आओ
+          if [ ! -f "./gradlew" ]; then
+            echo "Missing gradlew! Repairing..."
+            gradle wrapper --gradle-version 8.2
             chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            gradle assembleDebug
           fi
+
+          # 2. अगर project का स्ट्रक्चर मिसिंग है, तो उसे ठीक करो
+          # यह चेक करेगा कि क्या 'build.gradle' सही जगह पर है
+          PROJECT_DIR=$(find . -name "build.gradle" -exec dirname {} \; | head -n 1)
+          
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "❌ Critical Error: Build files not found anywhere!"
+            exit 1
+          fi
+          
+          echo "Repair successful. Building in: $PROJECT_DIR"
+          cd $PROJECT_DIR
+          
+          # 3. बिल्ड करने की कोशिश करो
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-VIP-Player-APK
+          name: Z-Plus-AI-Built-APK
           path: '**/build/outputs/apk/debug/*.apk'

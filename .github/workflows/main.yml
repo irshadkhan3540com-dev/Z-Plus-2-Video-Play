@@ -22,23 +22,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. गिटहब खुद का इंजन तैयार करेगा
-      - name: Setup Gradle
+      # 3. 🔥 सबसे बड़ा फिक्स: गिटहब को अपनी मर्जी चलाने से रोकना
+      # हम उसे मजबूर कर रहे हैं कि वो सिर्फ और सिर्फ Gradle 8.2 ही इस्तेमाल करे!
+      - name: Force Exact Gradle Version 8.2
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
 
-      # 4. 🔥 मास्टर स्ट्रोक: रोबोट खुद स्टार्टर फाइल (gradlew) बनाएगा!
-      - name: Generate Gradle Wrapper (Magic Engine)
-        run: gradle wrapper --gradle-version 8.2
+      # 4. बिना किसी स्टार्टर फाइल (gradlew) के, सीधा ओरिजिनल इंजन से APK बनाना
+      - name: Build the VIP APK Directly
+        run: gradle assembleDebug --stacktrace
 
-      # 5. स्टार्टर फाइल को चलने की परमिशन देगा
-      - name: Make Wrapper Executable
-        run: chmod +x gradlew
-
-      # 6. गूगल मीडिया इंजन डाउनलोड करेगा और APK बनाएगा (बिना क्रैश हुए)
-      - name: Build the VIP APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      # 7. तैयार APK को डाउनलोड के लिए सेव करेगा
+      # 5. तैयार APK को आपको डाउनलोड के लिए देना
       - name: Upload APK for Download
         uses: actions/upload-artifact@v4
         with:

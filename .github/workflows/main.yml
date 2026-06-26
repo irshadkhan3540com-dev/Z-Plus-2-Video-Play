@@ -1,4 +1,4 @@
-name: Final Build
+name: Final Working Build
 
 on: [push, workflow_dispatch]
 
@@ -13,18 +13,15 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      # यह कमांड पक्का करेगी कि रोबोट 'app' फोल्डर के अंदर बिल्ड करे
-      - name: Build with Gradle
-        run: chmod +x gradlew && ./gradlew assembleDebug
-        continue-on-error: true
+      # हम यहाँ फाइल ढूंढने के लिए एक बहुत ही शक्तिशाली तरीका इस्तेमाल करेंगे
+      - name: Build and Locate APK
+        run: |
+          chmod +x gradlew || true
+          ./gradlew assembleDebug || gradle assembleDebug
       
-      # अगर gradlew बाहर न मिले, तो अंदर के फोल्डर से बिल्ड करे
-      - name: Fallback Build
-        if: failure()
-        run: gradle :app:assembleDebug
-
+      # यह लाइन सबसे ज़रूरी है: यह कहीं भी APK हो, उसे उठा लेगी
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-Final-APK
-          path: '**/build/outputs/apk/debug/*.apk'
+          name: ZPlus-Final-APK
+          path: '**/build/outputs/apk/**/*.apk'

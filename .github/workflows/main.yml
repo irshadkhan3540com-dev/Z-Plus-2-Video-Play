@@ -1,4 +1,4 @@
-name: Z Plus Final Success Build
+name: Z Plus VIP Player Final Build
 
 on:
   push:
@@ -18,17 +18,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # गिटहब को केवल Gradle 8.2 इस्तेमाल करने के लिए मजबूर करना
+      # गिटहब को केवल Gradle 8.2 पर सेट करना
       - name: Force Gradle 8.2
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
-      # बिना किसी एरर के सीधा कमांड लाइन से APK बिल्ड करना
-      - name: Build VIP APK
-        run: gradle assembleDebug --stacktrace
+      # 🔥 क्रैश-प्रूफ कमांड: रैम मैनेज करना और डेमन इंजन को बंद रखना
+      - name: Build VIP APK (Crash-Proof Memory Mode)
+        run: |
+          gradle assembleDebug --no-daemon -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" --stacktrace
 
-      # तैयार APK को "Artifacts" में डाउनलोड के लिए अपलोड करना
+      # तैयार APK को "Artifacts" में डालना
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

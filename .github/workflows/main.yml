@@ -1,4 +1,4 @@
-name: Z Plus VIP Player Final Build
+name: Z Plus Ultimate AI Builder
 
 on:
   push:
@@ -18,19 +18,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # गिटहब को केवल Gradle 8.2 पर सेट करना
-      - name: Force Gradle 8.2
+      # गिटहब को मजबूत Gradle 8.2 वर्ज़न पर सेट करना
+      - name: Setup Gradle 8.2
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
-      # 🔥 क्रैश-प्रूफ कमांड: रैम मैनेज करना और डेमन इंजन को बंद रखना
-      - name: Build VIP APK (Crash-Proof Memory Mode)
+      # 🔥 मास्टर कमांड: पुराना सारा कचरा साफ करके बिल्कुल फ्रेश 'gradlew' फाइल खुद बनाना
+      - name: Force Clean Wrapper Generation
         run: |
-          gradle assembleDebug --no-daemon -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" --stacktrace
+          gradle wrapper --gradle-version 8.2
+          chmod +x gradlew
 
-      # तैयार APK को "Artifacts" में डालना
-      - name: Upload APK
+      # 🚀 मेमोरी और वर्ज़न क्रैश-प्रूफ बिल्ड कमांड (Kotlin Daemon को भी बंद किया गया है)
+      - name: Build VIP APK (AI Memory Safeguard)
+        run: |
+          ./gradlew assembleDebug --no-daemon -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" -Dorg.gradle.kotlin.compiler.daemon=false --stacktrace
+
+      # तैयार एपीके (APK) को डाउनलोड सेक्शन में भेजना
+      - name: Upload APK for Download
         uses: actions/upload-artifact@v4
         with:
           name: Z-Plus-VIP-Player-APK

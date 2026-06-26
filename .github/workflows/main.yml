@@ -1,4 +1,4 @@
-name: Z Plus Final Build
+name: Z Plus Final Success Build
 
 on:
   push:
@@ -11,22 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # यह कमांड आपके पूरे प्रोजेक्ट के हर फोल्डर में 'build.gradle' को ढूँढेगी
-      - name: Build and Scan All Folders
+      - name: Fix Permission and Build
         run: |
-          # जहाँ भी build.gradle मिले, वहीं से बिल्ड शुरू करो
-          BUILD_PATH=$(find . -name "build.gradle" -exec dirname {} \;)
-          echo "Building in: $BUILD_PATH"
-          cd $BUILD_PATH
-          # gradlew ढूंढो या खुद बनाओ
+          # यह कमांड पूरे प्रोजेक्ट में gradlew ढूंढेगी और उसे चालू करेगी
+          find . -name "gradlew" -exec chmod +x {} \;
+          
+          # यहाँ हम उस फोल्डर को ढूंढेंगे जिसमें build.gradle है
+          PROJECT_ROOT=$(find . -name "build.gradle" -exec dirname {} \; | head -n 1)
+          echo "Building in: $PROJECT_ROOT"
+          
+          cd $PROJECT_ROOT
+          
+          # ऐप बनाना शुरू करें
           if [ -f "./gradlew" ]; then
-            chmod +x gradlew
             ./gradlew assembleDebug
           else
             gradle assembleDebug
@@ -35,5 +38,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-VIP-Player-APK
+          name: Z-Plus-VIP-APK
           path: '**/build/outputs/apk/debug/*.apk'

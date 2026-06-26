@@ -1,6 +1,5 @@
-name: Z Plus Video Player Auto Build
+name: Z Plus VIP Player Build
 
-# यह बताएगा कि सेव करने पर या बटन दबाने पर रोबोट चालू हो
 on:
   push:
     branches: [ "main", "master" ]
@@ -12,29 +11,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. गिटहब आपका सारा कोड उठाएगा
+      # 1. गिटहब आपका कोड उठाएगा
       - name: Checkout Project Code
         uses: actions/checkout@v4
 
-      # 2. जावा सेटअप करेगा
+      # 2. जावा 17 सेटअप करेगा
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. 🚀 नईम भाई का आईडिया: गिटहब खुद अपना Gradle इंजन डाउनलोड करेगा!
-      # अब ./gradlew फाइल की कोई जरूरत नहीं है।
-      - name: Setup Gradle Automatically
+      # 3. गिटहब खुद का इंजन तैयार करेगा
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 4. APK बनाएगा (ध्यान दें: यहाँ ./gradlew हटाकर सिर्फ gradle कर दिया गया है)
-      - name: Build the APK
-        run: gradle assembleDebug --stacktrace
+      # 4. 🔥 मास्टर स्ट्रोक: रोबोट खुद स्टार्टर फाइल (gradlew) बनाएगा!
+      - name: Generate Gradle Wrapper (Magic Engine)
+        run: gradle wrapper --gradle-version 8.2
 
-      # 5. तैयार APK को डाउनलोड के लिए सेव करेगा
+      # 5. स्टार्टर फाइल को चलने की परमिशन देगा
+      - name: Make Wrapper Executable
+        run: chmod +x gradlew
+
+      # 6. गूगल मीडिया इंजन डाउनलोड करेगा और APK बनाएगा (बिना क्रैश हुए)
+      - name: Build the VIP APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      # 7. तैयार APK को डाउनलोड के लिए सेव करेगा
       - name: Upload APK for Download
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-Player-APK
+          name: Z-Plus-VIP-Player-APK
           path: app/build/outputs/apk/debug/app-debug.apk

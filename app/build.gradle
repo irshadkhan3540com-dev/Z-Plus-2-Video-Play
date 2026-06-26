@@ -15,7 +15,6 @@ android {
         versionName "1.0"
     }
 
-    // यह ब्लॉक मिसिंग था, रोबोट इसी वजह से बार-बार फेल हो रहा था
     buildTypes {
         release {
             minifyEnabled false
@@ -38,7 +37,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     
-    // Media3 - Google Video Engine
+    // Media3 - Google Official ExoPlayer Engine
     implementation 'androidx.media3:media3-exoplayer:1.2.0'
     implementation 'androidx.media3:media3-ui:1.2.0'
     implementation 'androidx.media3:media3-session:1.2.0'

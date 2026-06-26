@@ -1,52 +1,30 @@
-name: Z Plus AI-Self-Repairing Builder
+name: Final Build
 
-on:
-  push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      # 🔥 AI-Self-Repairing Logic: यह रोबोट खुद फाइल्स को रिपेयर करेगा
-      - name: AI Repair and Build
-        run: |
-          echo "Starting AI Deep Scan and Repair..."
-          
-          # 1. 'gradlew' फाइल गायब है तो इंटरनेट से नया वर्जन ले आओ
-          if [ ! -f "./gradlew" ]; then
-            echo "Missing gradlew! Repairing..."
-            gradle wrapper --gradle-version 8.2
-            chmod +x gradlew
-          fi
-
-          # 2. अगर project का स्ट्रक्चर मिसिंग है, तो उसे ठीक करो
-          # यह चेक करेगा कि क्या 'build.gradle' सही जगह पर है
-          PROJECT_DIR=$(find . -name "build.gradle" -exec dirname {} \; | head -n 1)
-          
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "❌ Critical Error: Build files not found anywhere!"
-            exit 1
-          fi
-          
-          echo "Repair successful. Building in: $PROJECT_DIR"
-          cd $PROJECT_DIR
-          
-          # 3. बिल्ड करने की कोशिश करो
-          ./gradlew assembleDebug --stacktrace
+      
+      # यह कमांड पक्का करेगी कि रोबोट 'app' फोल्डर के अंदर बिल्ड करे
+      - name: Build with Gradle
+        run: chmod +x gradlew && ./gradlew assembleDebug
+        continue-on-error: true
+      
+      # अगर gradlew बाहर न मिले, तो अंदर के फोल्डर से बिल्ड करे
+      - name: Fallback Build
+        if: failure()
+        run: gradle :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-AI-Built-APK
+          name: Z-Plus-Final-APK
           path: '**/build/outputs/apk/debug/*.apk'

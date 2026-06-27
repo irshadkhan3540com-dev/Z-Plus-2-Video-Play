@@ -7,74 +7,38 @@ on:
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Download Code from Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 2. Setup Java 17 Engine
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 🔥 मास्टर स्ट्रोक: यह स्टेप build.gradle और settings.gradle के टकराव को खुद ठीक कर देगा
-      - name: 3. Auto-Repair Gradle Conflict (Fixing Repositories Error)
+      # 🔥 फिक्स: यह स्टेप गिटहब को मजबूर करेगा कि वह गूगल की लाइब्रेरीज़ देखे
+      - name: Force Repositories Configuration
         run: |
-          echo "Fixing the FAIL_ON_PROJECT_REPOS error magically..."
-          
-          # Root build.gradle को एकदम क्लीन कर रहे हैं (पुराना कचरा साफ़)
-          cat << 'EOF' > build.gradle
-          plugins {
-              id 'com.android.application' version '8.1.1' apply false
-              id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
-          }
-          task clean(type: Delete) {
-              delete rootProject.buildDir
-          }
-          EOF
-          
-          # Settings.gradle को नए नियम (PREFER_SETTINGS) के साथ सेट कर रहे हैं
-          cat << 'EOF' > settings.gradle
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "Z Plus Video Player"
-          include ':app'
-          EOF
-          
-          # गलती से बनी फालतू फाइलें डिलीट कर रहे हैं
-          rm -rf "com.android.tools.build:gradle" || true
+          mkdir -p .gradle
+          echo "android.enableJetifier=true" >> gradle.properties
+          echo "android.useAndroidX=true" >> gradle.properties
 
-      - name: 4. Setup Gradle 8.2 Engine
+      # 🔥 फिक्स: Gradle 8.2 को प्रॉपर सेटअप करना
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
-      - name: 5. Create Fresh Starter (Wrapper)
+      # 🔥 मास्टर फिक्स: प्लगइन और लाइब्रेरी के एरर को जड़ से खत्म करना
+      - name: Run Build with Google Repos
         run: |
-          echo "Generating new gradlew..."
-          gradle wrapper --gradle-version 8.2
-          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace \
+          -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" \
+          -Pandroid.buildToolsVersion=34.0.0
 
-      - name: 6. Build the APK (Direct & Safe Mode)
-        run: |
-          echo "Building APK..."
-          ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: 7. Upload the Final APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Z-Plus-VIP-Player-APK

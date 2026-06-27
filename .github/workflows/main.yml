@@ -1,4 +1,4 @@
-name: Z Plus AI Ultimate Auto-Builder
+name: Z Plus Direct APK Builder
 
 on:
   push:
@@ -7,155 +7,42 @@ on:
 
 jobs:
   build:
-    name: Build AI Crash-Proof APK
+    name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout Project Source Code
+      - name: 1. Download Code from Repository
         uses: actions/checkout@v4
 
-      - name: 2. Setup Java 17 (Engine Core)
+      - name: 2. Setup Java 17 Engine
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 3. AI Radar Scan (Finding the Real Project out of 10 locations)
-        id: find_project
+      - name: 3. Remove Junk Files (Clean up)
         run: |
-          echo "🔍 AI Robot Searching for project root everywhere..."
-          # यह 10 अलग-अलग लोकेशन चेक करेगा
-          ALL_SETTINGS=$(find . -name "settings.gradle" -type f)
-          REAL_PATH="."
-          
-          for path in $ALL_SETTINGS; do
-            DIR=$(dirname "$path")
-            echo "Checking directory: $DIR"
-            # अगर इस फोल्डर के अंदर 'app' फोल्डर है, तो यही असली प्रोजेक्ट है
-            if [ -d "$DIR/app" ] || [ -f "$DIR/build.gradle" ]; then
-              REAL_PATH=$DIR
-              echo "✅ TARGET LOCKED: Found real project at $REAL_PATH"
-              break # डबल फाइल मिलने पर इग्नोर करेगा और आगे बढ़ेगा
-            fi
-          done
-          
-          echo "PROJECT_ROOT=$REAL_PATH" >> $GITHUB_ENV
-
-      - name: 4. Clean Old Junk (Deleting Duplicate/Old Engines)
-        run: |
-          cd ${{ env.PROJECT_ROOT }}
-          echo "🧹 Cleaning old gradlew files to prevent conflict..."
+          echo "Cleaning up accidentally created junk files..."
+          rm -rf "com.android.tools.build:gradle" || true
           rm -f gradlew gradlew.bat
-          rm -rf gradle/wrapper/
 
-      - name: 5. AI Auto-Repair System (Fixing all Gradle & Manifest files magically)
-        run: |
-          cd ${{ env.PROJECT_ROOT }}
-          echo "🛠️ AI is rewriting core files to guarantee 100% success..."
-          
-          # Root Build Gradle (100% Perfect)
-          cat << 'EOF' > build.gradle
-          plugins {
-              id 'com.android.application' version '8.1.1' apply false
-              id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
-          }
-          task clean(type: Delete) { delete rootProject.buildDir }
-          EOF
-
-          # Settings Gradle
-          cat << 'EOF' > settings.gradle
-          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories { google(); mavenCentral() }
-          }
-          rootProject.name = "Z Plus Video Player"
-          include ':app'
-          EOF
-
-          # App Build Gradle (With all dependencies and crash-proof settings)
-          mkdir -p app
-          cat << 'EOF' > app/build.gradle
-          plugins {
-              id 'com.android.application'
-              id 'org.jetbrains.kotlin.android'
-          }
-          android {
-              namespace 'com.zplus.videoplayer'
-              compileSdk 34
-              defaultConfig {
-                  applicationId "com.zplus.videoplayer"
-                  minSdk 24
-                  targetSdk 34
-                  versionCode 1
-                  versionName "1.0"
-              }
-              buildTypes { release { minifyEnabled false } }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              kotlinOptions { jvmTarget = '17' }
-          }
-          dependencies {
-              implementation 'androidx.core:core-ktx:1.12.0'
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'com.google.android.material:material:1.11.0'
-              implementation 'androidx.media3:media3-exoplayer:1.2.0'
-              implementation 'androidx.media3:media3-ui:1.2.0'
-              implementation 'androidx.media3:media3-session:1.2.0'
-          }
-          EOF
-
-          # Crash-Proof Android Manifest (Safe Default Icon)
-          mkdir -p app/src/main
-          cat << 'EOF' > app/src/main/AndroidManifest.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
-              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-              <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              <uses-permission android:name="android.permission.WAKE_LOCK" />
-              
-              <application
-                  android:allowBackup="true"
-                  android:icon="@android:drawable/sym_def_app_icon"
-                  android:label="Z Plus Video Player"
-                  android:supportsRtl="true"
-                  android:theme="@style/Theme.AppCompat.NoActionBar">
-                  <activity android:name=".MainActivity" android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-                  <activity android:name=".VideoListActivity" android:exported="false" />
-                  <activity android:name=".PlayerActivity" android:exported="false" android:screenOrientation="sensorLandscape" />
-              </application>
-          </manifest>
-          EOF
-
-      - name: 6. Download Fresh Engine from Internet
-        uses: gradle/actions/setup-g6vradle@v3
+      - name: 4. Setup Gradle 8.2 Engine
+        uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
-      - name: 7. Forge New Wrapper (Creating Starter Button)
+      - name: 5. Create Fresh Starter (Wrapper)
         run: |
-          cd ${{ env.PROJECT_ROOT }}
+          echo "Generating new gradlew for the current folders..."
           gradle wrapper --gradle-version 8.2
           chmod +x gradlew
 
-      - name: 8. RAM Shield Build (Compiling APK without Server Crash)
+      - name: 6. Build the APK (Direct & Safe Mode)
         run: |
-          cd ${{ env.PROJECT_ROOT }}
-          # यह कमांड रैम को 2GB तक लिमिट करेगी और Kotlin डेमन को बंद रखेगी
-          ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" -Dkotlin.compiler.execution.strategy=in-process
+          echo "Building APK from the 'app' folder..."
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: 9. Find & Extract APK (Artifact Hunter)
+      - name: 7. Upload the Final APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-VIP-Player-AI-APK
-          path: '**/build/outputs/apk/debug/*.apk'
+          name: Z-Plus-VIP-Player-APK
+          path: app/build/outputs/apk/debug/*.apk

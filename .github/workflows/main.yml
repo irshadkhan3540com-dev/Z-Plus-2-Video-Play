@@ -1,4 +1,4 @@
-name: Z Plus Direct APK Builder
+name: Z Plus Simple Builder
 
 on:
   push:
@@ -7,39 +7,31 @@ on:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: 1. Code Download
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: 2. Java 17 Setup
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 🔥 फिक्स: यह स्टेप गिटहब को मजबूर करेगा कि वह गूगल की लाइब्रेरीज़ देखे
-      - name: Force Repositories Configuration
-        run: |
-          mkdir -p .gradle
-          echo "android.enableJetifier=true" >> gradle.properties
-          echo "android.useAndroidX=true" >> gradle.properties
-
-      # 🔥 फिक्स: Gradle 8.2 को प्रॉपर सेटअप करना
-      - name: Setup Gradle
+      - name: 3. Setup Google Gradle Engine
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
 
-      # 🔥 मास्टर फिक्स: प्लगइन और लाइब्रेरी के एरर को जड़ से खत्म करना
-      - name: Run Build with Google Repos
-        run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace \
-          -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" \
-          -Pandroid.buildToolsVersion=34.0.0
+      # 🔥 मास्टर कमांड: यहाँ हमने './gradlew' हटा दिया है। 
+      # अब यह डायरेक्ट इंटरनेट वाले असली इंजन 'gradle' का इस्तेमाल करेगा।
+      # इससे "No such file" वाला एरर जिंदगी में कभी नहीं आएगा।
+      - name: 4. Build APK Directly
+        run: gradle assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: 5. Upload Final APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-VIP-Player-APK
+          name: Z-Plus-Video-Player-APK
           path: app/build/outputs/apk/debug/*.apk

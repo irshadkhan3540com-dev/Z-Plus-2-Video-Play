@@ -1,4 +1,7 @@
-name: Z Plus Final Build
+# ==========================================
+# Z PLUS VIP PLAYER - AI UNIFIED COMPONENT BUILDER
+# ==========================================
+name: Z Plus Unified AI Builder
 
 on:
   push:
@@ -7,20 +10,24 @@ on:
 
 jobs:
   build:
+    name: Build Crash-Proof Android APK
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 1. Code Download (Checkout Repository)
+        uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: 2. Setup Java 17 Engine Core
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 🔥 फिक्स: सेटिंग्स और बिल्ड फाइलों का टकराव खत्म करना
-      - name: Fix Repository Conflict
+      # 🔥 कंपोनेंट 1: रिपॉजिटरी और फाइलों के बीच का पुराना टकराव खुद ठीक करना
+      - name: 3. Auto-Repair Settings and Build Files
         run: |
-          # settings.gradle को पूरी तरह अपडेट करना ताकि वह रिपॉजिटरी कंट्रोल ले ले
+          echo "Fixing settings.gradle and build.gradle conflicts..."
+          
+          # settings.gradle को पूरी तरह सुरक्षित और नए नियमों के हिसाब से लिखना
           cat << 'EOF' > settings.gradle
           pluginManagement {
               repositories {
@@ -40,19 +47,40 @@ jobs:
           include ':app'
           EOF
 
-          # build.gradle को एकदम क्लीन करना (कोई रिपॉजिटरी नहीं, सिर्फ प्लगइन)
+          # Root build.gradle को एकदम क्लीन करना (कोई टकराव नहीं होगा)
           cat << 'EOF' > build.gradle
           plugins {
               id 'com.android.application' version '8.1.1' apply false
               id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
           }
+          task clean(type: Delete) {
+              delete rootProject.buildDir
+          }
           EOF
 
-      - name: Build APK
-        run: ./gradlew assembleDebug --no-daemon
+      # 🔥 कंपोनेंट 2: इंटरनेट से नया ताज़ा 'gradlew' (गेटलू) फाइल खुद तैयार करना
+      - name: 4. Setup Fresh Gradle Wrapper Engine
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
 
-      - name: Upload APK
+      # 🔥 कंपोनेंट 3: गेटलू फाइल बनाना और उसे चलने का पूरा अधिकार (Execute Permission) देना
+      - name: 5. Generate and Authorize gradlew Wrapper
+        run: |
+          echo "Generating 100% clean wrapper files..."
+          gradle wrapper --gradle-version 8.2
+          echo "Giving executable permissions to gradlew..."
+          chmod +x gradlew
+
+      # 🔥 कंपोनेंट 4: बिना किसी सर्वर क्रैश के डायरेक्ट 100% रियल APK कम्पाइल करना
+      - name: 6. Build APK Directly (Safe Memory Mode)
+        run: |
+          echo "Starting final APK compilation..."
+          ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+
+      # 🔥 कंपोनेंट 5: तैयार एपीके को डाउनलोड के लिए सेव करना
+      - name: 7. Upload the Final Repaired APK
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-Final-APK
+          name: Z-Plus-Final-Repaired-APK
           path: app/build/outputs/apk/debug/*.apk

@@ -1,6 +1,6 @@
-# ==========================================
-# Z PLUS VIP PLAYER - AI UNIFIED COMPONENT BUILDER
-# ==========================================
+# =============================================================
+# Z PLUS VIP PLAYER - DIRECT REUSE BUILDER (NO FILE OVERWRITE)
+# =============================================================
 name: Z Plus Unified AI Builder
 
 on:
@@ -10,77 +10,36 @@ on:
 
 jobs:
   build:
-    name: Build Crash-Proof Android APK
+    name: Build Android APK (Using Existing gradlew)
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Code Download (Checkout Repository)
+      - name: 1. कोड डाउनलोड करें (Checkout Repository)
         uses: actions/checkout@v4
 
-      - name: 2. Setup Java 17 Engine Core
+      - name: 2. जावा 17 सेटअप करें (Setup Java 17 Engine)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 🔥 कंपोनेंट 1: रिपॉजिटरी और फाइलों के बीच का पुराना टकराव खुद ठीक करना
-      - name: 3. Auto-Repair Settings and Build Files
+      # 🔥 स्टेप 3: यह सीधे आपके रूट फोल्डर की gradlew को चलने का अधिकार (Permission) देगा
+      - name: 3. आपकी बनी हुई gradlew को परमिशन दें (Authorize Existing gradlew)
         run: |
-          echo "Fixing settings.gradle and build.gradle conflicts..."
-          
-          # settings.gradle को पूरी तरह सुरक्षित और नए नियमों के हिसाब से लिखना
-          cat << 'EOF' > settings.gradle
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "Z Plus Video Player"
-          include ':app'
-          EOF
+          echo "Giving executable permission to your existing gradlew..."
+          chmod +x ./gradlew
 
-          # Root build.gradle को एकदम क्लीन करना (कोई टकराव नहीं होगा)
-          cat << 'EOF' > build.gradle
-          plugins {
-              id 'com.android.application' version '8.1.1' apply false
-              id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
-          }
-          task clean(type: Delete) {
-              delete rootProject.buildDir
-          }
-          EOF
-
-      # 🔥 कंपोनेंट 2: इंटरनेट से नया ताज़ा 'gradlew' (गेटलू) फाइल खुद तैयार करना
-      - name: 4. Setup Fresh Gradle Wrapper Engine
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.2'
-
-      # 🔥 कंपोनेंट 3: गेटलू फाइल बनाना और उसे चलने का पूरा अधिकार (Execute Permission) देना
-      - name: 5. Generate and Authorize gradlew Wrapper
+      # 🔥 स्टेप 4: आपकी ही फाइलों का इस्तेमाल करके रैम-सुरक्षित मोड में बिल्ड करना
+      - name: 4. सीधे एपीके बनाएं (Build APK Safely)
         run: |
-          echo "Generating 100% clean wrapper files..."
-          gradle wrapper --gradle-version 8.2
-          echo "Giving executable permissions to gradlew..."
-          chmod +x gradlew
+          echo "🚀 Starting APK compilation using your exact files..."
+          # हम यहाँ किसी भी फाइल को ओवरराइट किए बिना, सीधे कमांड के अंदर रैम और वर्कर को लिमिट कर रहे हैं
+          ./gradlew assembleDebug --no-daemon --stacktrace \
+            -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" \
+            -Dorg.gradle.workers.max=1
 
-      # 🔥 कंपोनेंट 4: बिना किसी सर्वर क्रैश के डायरेक्ट 100% रियल APK कम्पाइल करना
-      - name: 6. Build APK Directly (Safe Memory Mode)
-        run: |
-          echo "Starting final APK compilation..."
-          ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m"
-
-      # 🔥 कंपोनेंट 5: तैयार एपीके को डाउनलोड के लिए सेव करना
-      - name: 7. Upload the Final Repaired APK
+      # 🔥 स्टेप 5: तैयार एपीके को डाउनलोड के लिए गिटहब पर अपलोड करना
+      - name: 5. फाइनल एपीके अपलोड करें (Upload Final APK)
         uses: actions/upload-artifact@v4
         with:
-          name: Z-Plus-Final-Repaired-APK
-          path: app/build/outputs/apk/debug/*.apk
+          name: Z-Plus-Final-APK
+          path: '**/build/outputs/apk/debug/*.apk'
